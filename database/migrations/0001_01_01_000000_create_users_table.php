@@ -13,12 +13,12 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id('id_pengguna');
-            $table->string('nama');
+            $table->string('nama')->nullable();
             $table->string('no_telp')->unique();
             $table->string('email')->nullable();
             $table->string('password');
             $table->enum('peran', ['pelanggan', 'kasir', 'manajer']);
-            $table->boolean('wajib_ganti_password')->default(true);
+            $table->boolean('wajib_ganti_password')->default(false);
             $table->timestamps();
         });
 
