@@ -13,8 +13,9 @@ return new class extends Migration
     {
         Schema::create('stok_masuks', function (Blueprint $table) {
             $table->id('id_stok_masuk');
-            $table->foreignId('id_bahan')->constrained('bahans', 'id_bahan')->onDelete('cascade');
-            $table->foreignId('id_pengguna')->constrained('users', 'id_pengguna')->onDelete('cascade');
+            $table->foreignId('id_bahan')->constrained('bahans', 'id_bahan');
+            $table->foreignId('id_pengguna')->constrained('users', 'id_pengguna');
+            $table->decimal('jumlah');
             $table->date('tanggal');
             $table->timestamps();
         });

@@ -13,9 +13,9 @@ return new class extends Migration
     {
         Schema::create('pesanans', function (Blueprint $table) {
             $table->id('id_pesanan');
-            $table->foreignId('id_pengguna')->constrained('users', 'id_pengguna')->onDelete('cascade');
+            $table->foreignId('id_pengguna')->constrained('users', 'id_pengguna');
             $table->integer('nomor_meja');
-            $table->enum('metode_pembayaran', ['tunai', 'QRIS']);
+            $table->enum('metode_pembayaran', ['tunai', 'qris']);
             $table->enum('status', ['baru', 'diproses', 'selesai', 'dibatalkan'])->default('baru');
             $table->integer('subtotal');
             $table->integer('service');

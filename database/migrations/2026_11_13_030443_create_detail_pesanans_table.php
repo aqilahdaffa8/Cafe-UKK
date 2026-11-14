@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('detail_pesanans', function (Blueprint $table) {
             $table->id('id_detail_pesanan');
             $table->foreignId('id_pesanan')->constrained('pesanans', 'id_pesanan')->onDelete('cascade');
-            $table->foreignId('id_menu')->constrained('menus', 'id_menu')->onDelete('cascade');
+            $table->foreignId('id_menu')->constrained('menus', 'id_menu');
             $table->integer('jumlah_menu');
             $table->integer('harga_satuan');
             $table->timestamps();

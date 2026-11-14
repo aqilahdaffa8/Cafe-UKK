@@ -15,9 +15,10 @@ return new class extends Migration
             $table->id('id_bahan');
             $table->string('nama_bahan')->unique();
             $table->enum('satuan', ['g', 'ml', 'pcs']);
-            $table->integer('jumlah_stok');
+            $table->decimal('jumlah_stok');
             $table->integer('batas_minimum');
             $table->integer('harga_terakhir');
+            $table->date('tanggal_harga');
             $table->timestamps();
         });
     }
