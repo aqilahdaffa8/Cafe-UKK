@@ -9,11 +9,12 @@ use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable;
+    use HasApiTokens ,HasFactory, Notifiable;
     
     protected $primaryKey = 'id_pengguna';
 
@@ -49,5 +50,25 @@ class User extends Authenticatable
 
     public function isManajer():bool {
         return $this->peran === 'manajer';
+    }
+
+
+    public static function normalisasiTelepon(?string $nomor): ?string{
+        //Kalo tidak ada yang perlu dinormalisasi langsung menegembalikan null.
+        if ($nomor === null){
+            return null;
+        }
+
+        $nomor = preg_replace('/[^\d+]/', '', $nomor); //hapus semua karakter kecuali angka dan +
+
+        // mengganti awalan +62 dan 62 dengan 0
+        if (str_starts_with($nomor, '+62')){
+            $nomor = '0' . substr($nomor, 3); 
+        }
+        elseif (str_starts_with($nomor, '62')){
+            $nomor = '0' . substr($nomor, 2);
+        }
+
+        return preg_replace('/\D/', '', $nomor);
     }
 }
