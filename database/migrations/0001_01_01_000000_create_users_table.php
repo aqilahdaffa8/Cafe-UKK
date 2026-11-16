@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id('id_pengguna');
             $table->string('nama')->nullable();
             $table->string('no_telp')->unique();
-            $table->string('email')->nullable();
+            $table->string('email')->nullable()->unique();
             $table->string('password');
             $table->enum('peran', ['pelanggan', 'kasir', 'manajer']);
             $table->boolean('wajib_ganti_password')->default(false);

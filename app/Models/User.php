@@ -52,6 +52,10 @@ class User extends Authenticatable
         return $this->peran === 'manajer';
     }
 
+    public function isStaf(): bool {
+        return in_array($this->peran, ['manajer', 'kasir'], true);
+    }
+
 
     public static function normalisasiTelepon(?string $nomor): ?string{
         //Kalo tidak ada yang perlu dinormalisasi langsung menegembalikan null.
