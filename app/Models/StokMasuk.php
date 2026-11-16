@@ -21,7 +21,7 @@ class StokMasuk extends Model
         return $this->belongsTo(Bahan::class, 'id_bahan', 'id_bahan');
     }
 
-    public function pencatat(){
+    public function pengguna(){
         return $this->belongsTo(User::class, 'id_pengguna', 'id_pengguna');
     }
 }
