@@ -7,6 +7,9 @@
 <body>
     <h1>{{ $judul }}</h1>
     <p>Halo, {{ auth()->user()->nama ?? auth()->user()->email }}</p>
+    @if (session('status'))
+        <p style="color: green;">{{ session('status') }}</p>
+    @endif
 
     <form method="POST" action="{{ route('logout') }}">
         @csrf
