@@ -6,6 +6,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\Manajer\BahanController;
 use App\Http\Controllers\Manajer\StokMasukController;
+use App\Http\Controllers\Manajer\MenuController;
+
 
 // Halaman awal: arahkan sesuai kondisi login
 Route::get('/', function () {
@@ -39,8 +41,14 @@ Route::middleware(['auth', 'password.changed', 'role:manajer'])
         Route::get('/bahan', [BahanController::class, 'index'])->name('bahan.index');
         Route::post('/bahan', [BahanController::class, 'store'])->name('bahan.store');
         Route::patch('/bahan/{bahan}/batas', [BahanController::class, 'updateBatas'])->name('bahan.batas');
+
         Route::get('/stok-masuk', [StokMasukController::class, 'index'])->name('stok-masuk.index');
         Route::post('/stok-masuk', [StokMasukController::class, 'store'])->name('stok-masuk.store');
+        
+        Route::get('/menu', [MenuController::class, 'index'])->name('menu.index');
+        Route::post('/menu', [MenuController::class, 'store'])->name('menu.store');
+        Route::put('/menu/{menu}', [MenuController::class, 'update'])->name('menu.update');
+        Route::patch('/menu/{menu}/status', [MenuController::class, 'toggleStatus'])->name('menu.status');
     });
 
 Route::middleware(['auth', 'password.changed', 'role:kasir'])
