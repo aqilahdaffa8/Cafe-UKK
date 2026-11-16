@@ -17,7 +17,8 @@ class WebLoginController extends Controller
     {
         return view('auth.login');
     }
-
+    
+    //menerima data baru(store) dari form login
     public function store(StafLoginRequest $request)
     {
         $user = User::where('email', $request->email)->first(); //mengambil data user berdasarkan email yang diisi
