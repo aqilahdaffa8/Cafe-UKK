@@ -18,5 +18,11 @@ class DatabaseSeeder extends Seeder
         $this->call([
             UserSeeder::class,
         ]);
+
+        // Impor data awal CSV (bahan, menu, resep)
+        $this->command->call('app:import-csv');
+
+        // Keadaan awal untuk pengujian, dijalankan SESUDAH impor
+        $this->call(StokDemoSeeder::class);
     }
 }

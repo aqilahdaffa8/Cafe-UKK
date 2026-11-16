@@ -191,7 +191,8 @@ Folder importer CSV: `[ISI NANTI]`.
 
 | Keputusan | Penjelasan | Status |
 |---|---|---|
-| Identitas login | Nomor telepon (`no_telp`) bersama password, untuk pelanggan maupun staf. | Ditentukan |
+| Identitas login | Nomor telepon (`no_telp`) bersama password, untuk pelanggan. | Ditentukan |
+| Identisan login | Email (`email`) bersama password, untuk staf (kasir dan manajer) | Ditentukan |
 | Penyimpanan password | Selalu di-hash satu arah (`Hash::make` pada seeder dan cast `hashed` pada model), tidak pernah di-encrypt. | Ditentukan |
 | Peran saat registrasi | Akun yang mendaftar lewat jalur pelanggan dipaksa berperan `pelanggan` di sisi server. Input `peran` dari request diabaikan. | Ditentukan |
 | Pembatasan hak akses | Middleware `CheckRole` dengan alias `role`, dipakai di route, misalnya `role:manajer` atau `role:manajer,kasir`. Tidak login ditolak (401), peran tidak sesuai ditolak (403). Route dikelompokkan per peran. | Ditentukan (middleware); route per peran: Rencana |

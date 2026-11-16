@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id('id_resep');
             $table->foreignId('id_menu')->constrained('menus', 'id_menu')->onDelete('cascade');
             $table->foreignId('id_bahan')->constrained('bahans', 'id_bahan');
-            $table->decimal('takaran');
+            $table->decimal('takaran', 12, 2);
             $table->timestamps();
         });
     }

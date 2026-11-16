@@ -8,13 +8,13 @@ class Bahan extends Model
 {
     protected $primaryKey = 'id_bahan';
 
-    protected $fillable = ['nama_bahan', 'satuan', 'jumlah_stok', 'batas_minimum', 'harga_terakhir', 'tanggal_harga',];
+    protected $fillable = ['kode', 'nama_bahan', 'satuan', 'jumlah_stok', 'batas_minimum', 'harga_terakhir', 'tanggal_harga',];
 
     protected function casts(): array{
         return [
             'jumlah_stok' => 'decimal:2',
-            'batas_minimum' => 'decimal:2',
-            'harga_terakhir' => 'integer',
+            'batas_minimum' => 'integer',
+            'harga_terakhir' => 'decimal:2',
             'tanggal_harga' => 'date',
         ];
     }

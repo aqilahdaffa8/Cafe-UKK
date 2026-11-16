@@ -13,11 +13,12 @@ return new class extends Migration
     {
         Schema::create('bahans', function (Blueprint $table) {
             $table->id('id_bahan');
+            $table->string('kode')->unique();
             $table->string('nama_bahan')->unique();
             $table->enum('satuan', ['g', 'ml', 'pcs']);
-            $table->decimal('jumlah_stok');
+            $table->decimal('jumlah_stok', 12, 2);
             $table->integer('batas_minimum');
-            $table->integer('harga_terakhir');
+            $table->decimal('harga_terakhir', 12, 2);
             $table->date('tanggal_harga');
             $table->timestamps();
         });
