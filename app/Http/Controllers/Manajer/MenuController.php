@@ -19,6 +19,7 @@ class MenuController extends Controller
         $kategori = $request->query('kategori', 'semua');
 
         $menus = Menu::query()
+            ->withCount('reseps')
             ->when($q !== '', fn ($w) => $w->where(fn ($x) => $x
                 ->where('nama_menu', 'like', "%{$q}%")
                 ->orWhere('kategori', 'like', "%{$q}%")))
@@ -41,21 +42,20 @@ class MenuController extends Controller
 
     public function store(Request $request)
     {
-        $data = $request->validate($this->aturan() + [
-            'status' => ['required', 'in:aktif,nonaktif'],
-        ]);
+        $data = $request->validate($this->aturan());
 
         Menu::create([
             'kategori'  => $data['kategori'],
             'nama_menu' => $data['nama_menu'],
             'harga'     => $data['harga'],
-            'aktif'     => $data['status'] === 'aktif',
+            'aktif'     => false, // menu baru belum punya resep, jadi tidak boleh langsung aktif
             'gambar'    => $request->hasFile('gambar')
                 ? $request->file('gambar')->store('menu', 'public')
                 : null,
         ]);
 
-        return redirect()->route('manajer.menu.index')->with('sukses', 'Menu berhasil ditambahkan.');
+        return redirect()->route('manajer.menu.index')
+            ->with('sukses', 'Menu ditambahkan dalam keadaan nonaktif. Isi resepnya di Kelola Resep, lalu aktifkan.');
     }
 
     public function update(Request $request, Menu $menu)
@@ -71,6 +71,7 @@ class MenuController extends Controller
             unset($data['gambar']);
         }
 
+        // update() tidak menyentuh kolom aktif, jadi aturan resep tidak bisa dilewati lewat sini
         $menu->update($data);
 
         return back()->with('sukses', "Menu {$menu->nama_menu} diperbarui.");
@@ -78,6 +79,13 @@ class MenuController extends Controller
 
     public function toggleStatus(Menu $menu)
     {
+        // Mau diaktifkan, tapi belum ada resep: tolak
+        if (! $menu->aktif && ! $menu->punyaResep()) {
+            return back()->withErrors([
+                'status' => "Menu {$menu->nama_menu} belum punya resep. Isi dulu di Kelola Resep sebelum diaktifkan.",
+            ]);
+        }
+
         $menu->update(['aktif' => ! $menu->aktif]);
 
         return back()->with('sukses', $menu->aktif

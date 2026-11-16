@@ -31,6 +31,10 @@ class Menu extends Model
         return $this->hasMany(DetailPesanan::class, 'id_menu', 'id_menu');
     }
 
+    public function punyaResep(): bool{
+        return $this->reseps()->exists();
+    }
+
     // HPP = jumlah (takaran x harga terakhir bahan)
     // Pakai with('reseps.bahan') saat mengambil menu agar tidak query berulang
     protected function hpp(): Attribute{

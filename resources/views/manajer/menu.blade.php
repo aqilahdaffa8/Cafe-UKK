@@ -6,6 +6,9 @@
 @endphp
 <x-layouts.manajer title="Kelola Menu" subtitle="Atur katalog produk, harga jual, dan status ketersediaan pesanan menu.">
 
+    @error('status')
+        <div class="mb-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{{ $message }}</div>
+    @enderror
     <div class="mb-4 flex justify-end">
         <button type="button" onclick="document.getElementById('dlg-tambah').showModal()"
                 class="rounded-md bg-black px-4 py-2 text-sm font-medium text-white hover:bg-gray-800">+ Tambah Menu Baru</button>
@@ -79,7 +82,13 @@
                             </span>
                         @endif
                     </td>
-                    <td class="px-4 py-3 font-semibold {{ $m->aktif ? '' : 'line-through' }}">{{ $m->nama_menu }}</td>
+                    <td class="px-4 py-3">
+                        <p class="font-semibold {{ $m->aktif ? '' : 'line-through' }}">{{ $m->nama_menu }}</p>
+                        @if ($m->reseps_count === 0)
+                            <a href="{{ route('manajer.resep.index', ['menu' => $m->id_menu]) }}"
+                            class="text-xs font-normal text-red-600 no-underline hover:underline">Belum ada resep, isi dulu</a>
+                        @endif
+                    </td>
                     <td class="px-4 py-3">
                         <span class="rounded border border-gray-300 px-2 py-0.5 text-xs">{{ $label[$m->kategori] ?? $m->kategori }}</span>
                     </td>
@@ -97,9 +106,12 @@
                                     data-kategori="{{ $m->kategori }}"
                                     data-harga="{{ $m->harga }}"
                                     class="rounded-md border border-gray-300 px-3 py-1.5 text-xs text-gray-900 hover:bg-gray-50">Edit</button>
+                            @php $bolehAktif = $m->aktif || $m->reseps_count > 0; @endphp
                             <form method="POST" action="{{ route('manajer.menu.status', $m) }}">
                                 @csrf @method('PATCH')
-                                <button class="rounded-md border px-3 py-1.5 text-xs {{ $m->aktif ? 'border-gray-300 text-gray-600 hover:bg-gray-50' : 'border-black bg-white font-semibold text-gray-900 hover:bg-gray-100' }}">
+                                <button @disabled(! $bolehAktif)
+                                        title="{{ $bolehAktif ? '' : 'Isi resep dulu sebelum diaktifkan' }}"
+                                        class="rounded-md border px-3 py-1.5 text-xs {{ $m->aktif ? 'border-gray-300 text-gray-600 hover:bg-gray-50' : 'border-black bg-white font-semibold text-gray-900 hover:bg-gray-100' }} {{ $bolehAktif ? '' : 'cursor-not-allowed opacity-50' }}">
                                     {{ $m->aktif ? 'Nonaktifkan' : 'Aktifkan' }}
                                 </button>
                             </form>
@@ -152,18 +164,9 @@
                 <input type="number" min="0" step="1" name="harga" value="{{ old('_form') === 'tambah' ? old('harga') : '' }}" required
                        placeholder="25000" class="mt-1 w-full rounded-md border border-gray-300 px-3 py-2">
             </label>
-            <fieldset class="space-y-2 text-sm">
-                <legend class="mb-1">Status awal menu</legend>
-                <label class="flex items-start gap-3 rounded-md border border-gray-300 p-3">
-                    <input type="radio" name="status" value="aktif" class="mt-1" @checked(old('status', 'aktif') === 'aktif')>
-                    <span><b>Aktif</b><br><span class="text-gray-500">Tampil dan bisa dipesan.</span></span>
-                </label>
-                <label class="flex items-start gap-3 rounded-md border border-gray-300 p-3">
-                    <input type="radio" name="status" value="nonaktif" class="mt-1" @checked(old('status') === 'nonaktif')>
-                    <span><b>Nonaktif</b><br><span class="text-gray-500">Disimpan sebagai draf, disembunyikan dari pemesanan.</span></span>
-                </label>
-            </fieldset>
-            <p class="rounded-md bg-gray-100 px-3 py-2 text-xs text-gray-600">Resep dan takaran bahan diatur di menu Kelola Resep setelah menu dibuat.</p>
+            <p class="rounded-md bg-gray-100 px-3 py-2 text-xs text-gray-600">
+                Menu baru otomatis <b>nonaktif</b>. Isi resep dan takaran bahan di Kelola Resep, lalu aktifkan dari tabel ini.
+            </p>
             <div class="flex justify-end gap-2">
                 <button type="button" onclick="this.closest('dialog').close()" class="rounded-md border border-gray-300 px-4 py-2 text-sm">Batal</button>
                 <button class="rounded-md bg-black px-4 py-2 text-sm font-medium text-white">Simpan menu</button>
