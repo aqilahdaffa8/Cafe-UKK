@@ -10,6 +10,7 @@ use App\Http\Controllers\Manajer\MenuController;
 use App\Http\Controllers\Manajer\ResepController;
 use App\Http\Controllers\Manajer\LaporanController;
 use App\Http\Controllers\Kasir\PesananController;
+use App\Http\Controllers\Kasir\PelangganController;
 
 
 // Halaman awal: arahkan sesuai kondisi login
@@ -74,4 +75,7 @@ Route::middleware(['auth', 'password.changed', 'role:kasir'])
         Route::patch('/pesanan/{pesanan}/selesai', [PesananController::class, 'selesai'])->name('pesanan.selesai');
         Route::patch('/pesanan/{pesanan}/batal', [PesananController::class, 'batal'])->name('pesanan.batal');
         Route::get('/pesanan/{pesanan}/struk', [PesananController::class, 'struk'])->name('pesanan.struk');
+
+        Route::post('/pelanggan/cari', [PelangganController::class, 'cari'])->middleware('throttle:20,1')->name('pelanggan.cari');
+        Route::patch('/pelanggan/{pelanggan}/reset-password', [PelangganController::class, 'reset'])->middleware('throttle:10,1')->name('pelanggan.reset');
     });
