@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 
 class Pesanan extends Model
 {
@@ -28,6 +29,14 @@ class Pesanan extends Model
             'pajak' => 'integer',
             'total_harga' => 'integer',
         ];
+    }
+
+    protected function kode(): Attribute{
+        return Attribute::get(fn () => sprintf(
+            '#ORD-%s-%03d',
+            ($this->created_at ?? now())->format('Y'),
+            $this->id_pesanan
+        ));
     }
 
     public function pembuat(){

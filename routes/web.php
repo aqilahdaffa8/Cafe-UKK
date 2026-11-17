@@ -9,6 +9,7 @@ use App\Http\Controllers\Manajer\StokMasukController;
 use App\Http\Controllers\Manajer\MenuController;
 use App\Http\Controllers\Manajer\ResepController;
 use App\Http\Controllers\Manajer\LaporanController;
+use App\Http\Controllers\Kasir\PesananController;
 
 
 // Halaman awal: arahkan sesuai kondisi login
@@ -39,7 +40,7 @@ Route::middleware(['auth', 'password.changed', 'role:manajer'])
     ->prefix('manajer')
     ->name('manajer.')
     ->group(function () {
-        Route::get('/', fn () => redirect()->route('manajer.bahan.index'))->name('beranda');
+        Route::get('/', fn () => redirect()->route('manajer.menu.index'))->name('beranda');
         Route::get('/bahan', [BahanController::class, 'index'])->name('bahan.index');
         Route::post('/bahan', [BahanController::class, 'store'])->name('bahan.store');
         Route::patch('/bahan/{bahan}/batas', [BahanController::class, 'updateBatas'])->name('bahan.batas');
@@ -64,8 +65,8 @@ Route::middleware(['auth', 'password.changed', 'role:kasir'])
     ->prefix('kasir')
     ->name('kasir.')
     ->group(function () {
-        Route::get('/', fn () => redirect()->route('kasir.beranda'))->name('beranda');
-        Route::get('/bahan', [BahanController::class, 'index'])->name('bahan.index');
-        Route::post('/bahan', [BahanController::class, 'store'])->name('bahan.store');
-        Route::patch('/bahan/{bahan}/batas', [BahanController::class, 'updateBatas'])->name('bahan.batas');
+        Route::get('/', fn () => redirect()->route('kasir.pesanan.create'))->name('beranda');
+        Route::get('/pesanan/baru', [PesananController::class, 'create'])->name('pesanan.create');
+        Route::get('/pesanan', [PesananController::class, 'index'])->name('pesanan.index');
+        Route::post('/pesanan', [PesananController::class, 'store'])->name('pesanan.store');
     });
