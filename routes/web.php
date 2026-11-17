@@ -69,4 +69,9 @@ Route::middleware(['auth', 'password.changed', 'role:kasir'])
         Route::get('/pesanan/baru', [PesananController::class, 'create'])->name('pesanan.create');
         Route::get('/pesanan', [PesananController::class, 'index'])->name('pesanan.index');
         Route::post('/pesanan', [PesananController::class, 'store'])->name('pesanan.store');
+
+        Route::patch('/pesanan/{pesanan}/proses', [PesananController::class, 'proses'])->name('pesanan.proses');
+        Route::patch('/pesanan/{pesanan}/selesai', [PesananController::class, 'selesai'])->name('pesanan.selesai');
+        Route::patch('/pesanan/{pesanan}/batal', [PesananController::class, 'batal'])->name('pesanan.batal');
+        Route::get('/pesanan/{pesanan}/struk', [PesananController::class, 'struk'])->name('pesanan.struk');
     });

@@ -11,12 +11,6 @@
     ];
 @endphp
 <x-layouts.manajer title="Laporan Operasional" subtitle="Penjualan menu, bahan menipis, dan analisis margin HPP.">
-
-    <div class="mb-4 flex justify-end print:hidden">
-        <button type="button" onclick="window.print()"
-                class="rounded-md bg-black px-4 py-2 text-sm font-medium text-white hover:bg-gray-800">Cetak laporan</button>
-    </div>
-
     {{-- Kartu ringkasan --}}
     <div class="mb-6 grid grid-cols-4 gap-4">
         <div class="rounded-lg border border-gray-200 bg-white p-5">
