@@ -57,7 +57,7 @@
         </div>
     </div>
 
-    <div class="overflow-x-auto rounded-lg border border-gray-200 bg-white">
+    <div id="tabel-menu" class="overflow-x-auto rounded-lg border border-gray-200 bg-white">
         <table class="w-full text-left text-sm">
             <thead class="border-b border-gray-200 bg-gray-50 text-[11px] uppercase tracking-wider text-gray-500">
             <tr>
@@ -127,7 +127,7 @@
             <p>Menampilkan <b>{{ $menus->firstItem() ?? 0 }}-{{ $menus->lastItem() ?? 0 }}</b> dari <b>{{ $menus->total() }}</b> menu</p>
         </div>
     </div>
-    <div class="mt-4">{{ $menus->links() }}</div>
+    <div class="mt-4">{{ $menus->fragment('tabel-menu')->links() }}</div>
 
     {{-- Modal tambah --}}
     <dialog id="dlg-tambah" class="m-auto w-full max-w-lg rounded-xl p-0 backdrop:bg-black/40">

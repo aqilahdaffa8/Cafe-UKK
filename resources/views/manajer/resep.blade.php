@@ -12,34 +12,37 @@
 
     <div class="grid grid-cols-3 gap-6">
 
-        {{-- KIRI: daftar menu --}}
-        <div class="col-span-1 rounded-lg border border-gray-200 bg-white">
-            <div class="flex items-center justify-between border-b border-gray-200 px-4 py-3">
-                <h3 class="text-sm font-bold">Pilih Menu</h3>
-                <span class="rounded-full border border-gray-300 px-2 py-0.5 text-xs">{{ $menus->count() }} Menu</span>
-            </div>
-            <div class="border-b border-gray-200 p-3">
-                <input type="text" id="cariMenu" placeholder="Cari nama menu..."
-                       class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm">
-            </div>
-            <div class="max-h-[32rem] space-y-2 overflow-y-auto p-3" id="daftarMenu">
-                @foreach ($menus as $m)
-                    @php $aktif = $menuDipilih && $menuDipilih->id_menu === $m->id_menu; @endphp
-                    <a href="{{ route('manajer.resep.index', ['menu' => $m->id_menu]) }}"
-                       data-nama="{{ strtolower($m->nama_menu) }}"
-                       class="item-menu block rounded-md border px-3 py-2 text-sm {{ $aktif ? 'border-2 border-black' : 'border-gray-200 hover:bg-gray-50' }}">
-                        <div class="flex items-start justify-between gap-2">
-                            <p class="font-semibold">{{ $m->nama_menu }}</p>
-                            @if ($m->reseps_count > 0)
-                                <span class="shrink-0 rounded bg-black px-2 py-0.5 text-[11px] text-white">Ada Resep</span>
-                            @else
-                                <span class="shrink-0 rounded border border-gray-300 px-2 py-0.5 text-[11px] text-gray-500">Belum ada</span>
-                            @endif
-                        </div>
-                        <p class="text-xs capitalize text-gray-500">{{ $m->kategori }}</p>
-                        <p class="mt-1 text-xs text-gray-600">Harga jual {{ $rp($m->harga) }}</p>
-                    </a>
-                @endforeach
+        {{-- KIRI: daftar menu (tinggi mengikuti kolom kanan) --}}
+        <div class="relative col-span-1 min-h-[24rem]">
+            <div class="absolute inset-0 flex flex-col rounded-lg border border-gray-200 bg-white">
+                <div class="flex shrink-0 items-center justify-between border-b border-gray-200 px-4 py-3">
+                    <h3 class="text-sm font-bold">Pilih Menu</h3>
+                    <span class="rounded-full border border-gray-300 px-2 py-0.5 text-xs">{{ $menus->count() }} Menu</span>
+                </div>
+                <div class="shrink-0 border-b border-gray-200 p-3">
+                    <input type="text" id="cariMenu" placeholder="Cari nama menu..."
+                        class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm">
+                </div>
+                <div class="min-h-0 flex-1 space-y-2 overflow-y-auto p-3" id="daftarMenu">
+                    @foreach ($menus as $m)
+                        @php $aktif = $menuDipilih && $menuDipilih->id_menu === $m->id_menu; @endphp
+                        <a href="{{ route('manajer.resep.index', ['menu' => $m->id_menu]) }}"
+                        @if ($aktif) id="menuAktif" @endif
+                        data-nama="{{ strtolower($m->nama_menu) }}"
+                        class="item-menu block rounded-md border px-3 py-2 text-sm {{ $aktif ? 'border-2 border-black' : 'border-gray-200 hover:bg-gray-50' }}">
+                            <div class="flex items-start justify-between gap-2">
+                                <p class="font-semibold">{{ $m->nama_menu }}</p>
+                                @if ($m->reseps_count > 0)
+                                    <span class="shrink-0 rounded bg-black px-2 py-0.5 text-[11px] text-white">Ada Resep</span>
+                                @else
+                                    <span class="shrink-0 rounded border border-gray-300 px-2 py-0.5 text-[11px] text-gray-500">Belum ada</span>
+                                @endif
+                            </div>
+                            <p class="text-xs capitalize text-gray-500">{{ $m->kategori }}</p>
+                            <p class="mt-1 text-xs text-gray-600">Harga jual {{ $rp($m->harga) }}</p>
+                        </a>
+                    @endforeach
+                </div>
             </div>
         </div>
 

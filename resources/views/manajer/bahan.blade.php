@@ -40,7 +40,7 @@
         <a href="{{ route('manajer.bahan.index') }}" class="rounded-md border border-gray-200 px-3 py-2 text-sm hover:bg-gray-50">Reset</a>
     </form>
 
-    <div class="overflow-x-auto rounded-lg border border-gray-200 bg-white">
+    <div id="tabel-bahan" class="overflow-x-auto rounded-lg border border-gray-200 bg-white">
         <table class="w-full text-left text-sm">
             <thead class="border-b border-gray-200 bg-gray-50 text-[11px] uppercase tracking-wider text-gray-500">
             <tr>
@@ -92,7 +92,7 @@
         </table>
     </div>
 
-    <div class="mt-4">{{ $bahans->links() }}</div>
+    <div class="mt-4">{{ $bahans->fragment('tabel-bahan')->links() }}</div>
 
     {{-- Modal tambah bahan --}}
     <dialog id="dlg-tambah" class="m-auto w-full max-w-md rounded-xl p-0 backdrop:bg-black/40">

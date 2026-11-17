@@ -19,13 +19,14 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="bg-gray-50 font-sans text-gray-900">
-<header class="flex h-14 items-center border-b border-gray-200 bg-white px-6">
+<header class="sticky top-0 z-20 flex h-14 items-center border-b border-gray-200 bg-white px-6 print:hidden">
     <span class="text-sm font-bold">Kedai Kopi Senja</span>
 </header>
 
-<div class="flex min-h-[calc(100vh-3.5rem)]">
-    <aside class="flex w-56 shrink-0 flex-col justify-between border-r border-gray-200 bg-gray-100">
-        <div class="p-3">
+<div class="flex">
+    {{-- Sidebar: setinggi sisa layar dan menempel, tidak ikut panjang halaman --}}
+    <aside class="sticky top-14 flex h-[calc(100vh-3.5rem)] w-60 shrink-0 flex-col self-start border-r border-gray-200 bg-gray-100 print:hidden">
+        <div class="flex-1 overflow-y-auto p-3">
             <p class="mb-2 px-3 text-[10px] font-semibold uppercase tracking-wider text-gray-500">Navigasi Utama</p>
             <nav class="space-y-1 text-sm">
                 @foreach ($menu as [$label, $rute])
@@ -50,10 +51,13 @@
                 @csrf
                 <button class="w-full rounded-md border border-gray-300 bg-white px-3 py-1.5 text-xs hover:bg-gray-50">Logout</button>
             </form>
+            <a href="{{ route('password.edit') }}"class="mt-2 block text-center text-xs text-gray-500 hover:text-gray-900 hover:underline">
+                Ubah password
+            </a>
         </div>
     </aside>
 
-    <div class="flex flex-1 flex-col">
+    <div class="flex min-h-[calc(100vh-3.5rem)] min-w-0 flex-1 flex-col">
         <main class="flex-1 p-8">
             <h2 class="text-2xl font-bold">{{ $title ?? '' }}</h2>
             @isset($subtitle)
@@ -64,7 +68,7 @@
             @endif
             {{ $slot }}
         </main>
-        <footer class="border-t border-gray-200 px-8 py-4 text-xs text-gray-500">
+        <footer class="border-t border-gray-200 px-8 py-4 text-xs text-gray-500 print:hidden">
             &copy; {{ date('Y') }} Kedai Kopi Senja
         </footer>
     </div>
