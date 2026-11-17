@@ -8,6 +8,7 @@ use App\Http\Controllers\Manajer\BahanController;
 use App\Http\Controllers\Manajer\StokMasukController;
 use App\Http\Controllers\Manajer\MenuController;
 use App\Http\Controllers\Manajer\ResepController;
+use App\Http\Controllers\Manajer\LaporanController;
 
 
 // Halaman awal: arahkan sesuai kondisi login
@@ -55,6 +56,8 @@ Route::middleware(['auth', 'password.changed', 'role:manajer'])
         Route::post('/resep', [ResepController::class, 'store'])->name('resep.store');
         Route::put('/resep/{resep}', [ResepController::class, 'update'])->name('resep.update');
         Route::delete('/resep/{resep}', [ResepController::class, 'destroy'])->name('resep.destroy');
+
+        Route::get('/laporan', [LaporanController::class, 'index'])->name('laporan.index');
     });
 
 Route::middleware(['auth', 'password.changed', 'role:kasir'])
