@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Manajer;
 use App\Http\Controllers\Controller;
 use App\Models\Bahan;
 use Illuminate\Http\Request;
+use App\Services\SupplierService;
+
 
 class BahanController extends Controller
 {
@@ -66,5 +68,34 @@ class BahanController extends Controller
         $bahan->update($data);
 
         return back()->with('sukses', "Batas minimum {$bahan->nama_bahan} diperbarui.");
+    }
+
+    public function syncHargaSupplier(SupplierService $supplierService)
+    {
+        $hasil = $supplierService->ambilHargaBahan();
+        // JIKA LAYANAN GAGAL / TIMEOUT / API KEY SALAH (PERILAKU FALLBACK)
+        if (! $hasil['sukses']) {
+            return back()->with('peringatan', $hasil['pesan']);
+        }
+        
+        // JIKA BERHASIL: Update harga bahan yang cocok berdasarkan kode
+        $tanggalPembaruan = $hasil['diperbarui'];
+        $jumlahDiupdate   = 0;
+
+        foreach ($hasil['data'] as $item) {
+            $kode  = $item['kode'] ?? null;
+            $harga = $item['harga_per_satuan'] ?? null;
+            if ($kode && $harga !== null) {
+                $bahan = Bahan::where('kode', $kode)->first();
+                if ($bahan) {
+                    $bahan->update([
+                        'harga_terakhir' => $harga,
+                        'tanggal_harga'  => $tanggalPembaruan,
+                    ]);
+                    $jumlahDiupdate++;
+                }
+            }
+        }
+        return back()->with('sukses', "Berhasil memperbarui {$jumlahDiupdate} harga bahan dari supplier (Per tanggal: {$tanggalPembaruan}).");
     }
 }

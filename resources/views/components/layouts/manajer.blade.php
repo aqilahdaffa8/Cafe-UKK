@@ -63,8 +63,22 @@
             @isset($subtitle)
                 <p class="mb-6 mt-1 text-sm text-gray-500">{{ $subtitle }}</p>
             @endisset
-            @if (session('sukses'))
-                <div class="mb-4 rounded-lg bg-green-50 px-4 py-3 text-sm text-green-700">{{ session('sukses') }}</div>
+                        @if (session('sukses'))
+                <div class="mb-4 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
+                    ✅ {{ session('sukses') }}
+                </div>
+            @endif
+
+            @if (session('peringatan'))
+                <div class="mb-4 rounded-lg border border-yellow-200 bg-yellow-50 px-4 py-3 text-sm text-yellow-800">
+                    ⚠️ {{ session('peringatan') }}
+                </div>
+            @endif
+
+            @if (session('error'))
+                <div class="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                    ❌ {{ session('error') }}
+                </div>
             @endif
             {{ $slot }}
         </main>
