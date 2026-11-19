@@ -1,7 +1,7 @@
 @php
     $angka = fn ($n) => rtrim(rtrim(number_format((float) $n, 2, ',', '.'), '0'), ',');
 @endphp
-<x-layouts.manajer title="Stok Masuk" subtitle="Catat pembelian bahan baku. Stok dan harga terakhir bahan ikut diperbarui.">
+<x-layouts.manajer title="Stok Masuk" subtitle="Catat pembelian bahan baku. Stok bahan akan otomatis bertambah.">
 
     @if ($errors->any())
         <div class="mb-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
@@ -13,8 +13,8 @@
           class="mb-6 rounded-lg border border-gray-200 bg-white p-5">
         @csrf
         <h3 class="mb-4 text-sm font-bold">Catat stok masuk</h3>
-        <div class="grid grid-cols-4 gap-4">
-            <label class="col-span-2 block text-sm">Bahan
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <label class="md:col-span-2 block text-sm">Bahan
                 <select name="id_bahan" required class="mt-1 w-full rounded-md border border-gray-300 px-3 py-2">
                     <option value="">Pilih bahan...</option>
                     @foreach ($bahans as $b)
@@ -26,10 +26,6 @@
             </label>
             <label class="block text-sm">Jumlah
                 <input type="number" step="0.01" min="0.01" name="jumlah" value="{{ old('jumlah') }}" required
-                       class="mt-1 w-full rounded-md border border-gray-300 px-3 py-2">
-            </label>
-            <label class="block text-sm">Harga beli per satuan (Rp)
-                <input type="number" step="0.01" min="0" name="harga" value="{{ old('harga') }}" required
                        class="mt-1 w-full rounded-md border border-gray-300 px-3 py-2">
             </label>
             <label class="block text-sm">Tanggal

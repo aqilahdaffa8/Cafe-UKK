@@ -27,7 +27,6 @@ class StokMasukController extends Controller
         $data = $request->validate([
             'id_bahan' => ['required', 'exists:bahans,id_bahan'],
             'jumlah'   => ['required', 'numeric', 'min:0.01', 'max:999999.99'],
-            'harga'    => ['required', 'numeric', 'min:0'],
             'tanggal'  => ['required', 'date', 'before_or_equal:today'],
         ]);
 
@@ -42,13 +41,6 @@ class StokMasukController extends Controller
             ]);
 
             $bahan->jumlah_stok = $bahan->jumlah_stok + $data['jumlah'];
-
-            // Harga hanya diperbarui kalau pembelian ini tidak lebih lama dari harga yang tercatat
-            if (! $bahan->tanggal_harga || $data['tanggal'] >= $bahan->tanggal_harga) {
-                $bahan->harga_terakhir = $data['harga'];
-                $bahan->tanggal_harga  = $data['tanggal'];
-            }
-
             $bahan->save();
 
             return $bahan->nama_bahan;
