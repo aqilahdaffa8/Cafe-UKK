@@ -32,13 +32,18 @@ class SupplierService
         }
 
         try {
+            // Pastikan URL mengarah ke endpoint lengkap /harga-bahan
+            $endpoint = str_ends_with(rtrim($url, '/'), '/harga-bahan')
+                ? rtrim($url, '/')
+                : rtrim($url, '/') . '/harga-bahan';
+
             // Panggil API dengan timeout 5 detik
             $response = Http::timeout(5)
                 ->withHeaders([
                     'X-API-Key' => $apiKey,
                     'Accept'    => 'application/json',
                 ])
-                ->get($url);
+                ->get($endpoint);
 
             // Jika API Key ditolak (401)
             if ($response->status() === 401) {
