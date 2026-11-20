@@ -78,11 +78,12 @@ class AuthController extends Controller
             'pesan'   => 'Login berhasil.',
             'data'    => [
                 'user'  => [
-                    'id_pengguna' => $user->id_pengguna,
-                    'nama'        => $user->nama,
-                    'no_telp'     => $user->no_telp,
-                    'email'       => $user->email,
-                    'peran'       => $user->peran,
+                    'id_pengguna'          => $user->id_pengguna,
+                    'nama'                 => $user->nama,
+                    'no_telp'              => $user->no_telp,
+                    'email'                => $user->email,
+                    'peran'                => $user->peran,
+                    'wajib_ganti_password' => (bool) $user->wajib_ganti_password,
                 ],
                 'token' => $token,
             ],
@@ -92,9 +93,52 @@ class AuthController extends Controller
     //mengambil profil pengguna yang sedang login
     public function profil(Request $request)
     {
+        $user = $request->user();
         return response()->json([
             'sukses' => true,
-            'data'   => $request->user(),
+            'data'   => [
+                'id_pengguna'          => $user->id_pengguna,
+                'nama'                 => $user->nama,
+                'no_telp'              => $user->no_telp,
+                'email'                => $user->email,
+                'peran'                => $user->peran,
+                'wajib_ganti_password' => (bool) $user->wajib_ganti_password,
+            ],
+        ]);
+    }
+
+    //mengubah password pengguna yang sedang login
+    public function gantiPassword(Request $request)
+    {
+        $validated = $request->validate([
+            'password_lama' => ['required', 'string'],
+            'password'      => ['required', 'string', 'min:8', 'confirmed', 'different:password_lama'],
+        ], [
+            'password_lama.required' => 'Password lama / sementara wajib diisi.',
+            'password.required'      => 'Password baru wajib diisi.',
+            'password.min'           => 'Password baru minimal 8 karakter.',
+            'password.confirmed'     => 'Konfirmasi password baru tidak cocok.',
+            'password.different'     => 'Password baru tidak boleh sama dengan password lama.',
+        ]);
+
+        $user = $request->user();
+
+        if (! Hash::check($validated['password_lama'], $user->password)) {
+            return response()->json([
+                'sukses' => false,
+                'pesan'  => 'Password lama / sementara salah.',
+                'errors' => ['password_lama' => ['Password lama / sementara salah.']],
+            ], 422);
+        }
+
+        $user->update([
+            'password'             => $validated['password'],
+            'wajib_ganti_password' => false,
+        ]);
+
+        return response()->json([
+            'sukses' => true,
+            'pesan'  => 'Password berhasil diperbarui.',
         ]);
     }
 

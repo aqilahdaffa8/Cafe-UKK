@@ -54,10 +54,10 @@
 | Bahasa backend | PHP 8.3 | Ditentukan | Persyaratan minimum Laravel 13. |
 | Framework backend | Laravel 13.42.0 | Ditentukan | Menyediakan ORM, migration, seeder, middleware, dan pengujian bawaan. |
 | Database relasional | MySQL, database `cafe_ukk` | Ditentukan | Mendukung foreign key dan transaksi yang dibutuhkan aturan stok. |
-| REST API | Laravel API + Laravel Sanctum (token) | Rencana | Autentikasi token untuk aplikasi mobile. |
-| Frontend web staf | `[ISI NANTI]` | Belum ditentukan | |
-| Aplikasi Android | `[ISI NANTI]` | Belum ditentukan | |
-| Package penting | `laravel/sanctum` (rencana); PHPUnit (pengujian bawaan Laravel) | Rencana | |
+| REST API | Laravel API + Laravel Sanctum (token) | Ditentukan | Autentikasi token Bearer untuk aplikasi mobile pelanggan. |
+| Frontend web staf | Blade / Web UI | Ditentukan | Antarmuka kasir dan manajer kafe. |
+| Aplikasi Mobile | Flutter 3.x (Dart) | Ditentukan | Aplikasi mobile pemesanan pelanggan di folder `app_cafe_ukk`. |
+| Package penting | `laravel/sanctum` (autentikasi API token); PHPUnit (pengujian bawaan Laravel) | Ditentukan | Mendukung endpoint pelanggan dan testing. |
 
 ---
 
@@ -116,26 +116,43 @@ php artisan test
 
 ---
 
-## 4. Cara Memasang APK
+## 4. Aplikasi Mobile Pelanggan (Flutter)
 
-Belum tersedia. `[ISI NANTI]`
+Aplikasi mobile untuk pelanggan tersedia di folder berdampingan: `../app_cafe_ukk`.
 
-- Lokasi file APK: `/apk` (sesuai ketentuan dokumen proyek).
-- Versi minimum Android: `[ISI NANTI]`
-- Cara mengatur alamat server/API di aplikasi: `[ISI NANTI]`
-- Cara memastikan HP terhubung ke server (satu jaringan, server dijalankan dengan `php artisan serve --host=0.0.0.0`): `[verifikasi saat aplikasi mobile ada]`
-- Alamat API yang digunakan aplikasi: `[ISI NANTI]`
+- **Lokasi Proyek Mobile:** `pengerjaan/app_cafe_ukk/`
+- **Cara Menjalankan:**
+  ```bash
+  cd ../app_cafe_ukk
+  flutter pub get
+  flutter run
+  ```
+- **Cara Membangun APK:**
+  ```bash
+  flutter build apk --release
+  # Output APK berada di: build/app/outputs/flutter-apk/app-release.apk
+  ```
+- **Pengaturan Alamat Server / API:**
+  Diatur pada file `lib/constant.dart`:
+  - Emulator Android: `http://10.0.2.2:8000/api`
+  - Browser / Desktop: `http://127.0.0.1:8000/api`
+  - HP Fisik (Satu Wi-Fi): `http://<IP_LAPTOP>:8000/api`
+- **Menjalankan Server Laravel untuk Akses HP Fisik:**
+  ```bash
+  php artisan serve --host=0.0.0.0 --port=8000
+  ```
 
 ---
 
 ## 5. Akun Pengujian
 
-| Peran | Username / Nomor HP | Password |
-|---|---|---|
-| Manajer | `[isi sesuai UserSeeder]` | `[isi sesuai UserSeeder]` |
-| Kasir | `[isi sesuai UserSeeder]` | `[isi sesuai UserSeeder]` |
-| Pelanggan | `[daftar sendiri lewat API/aplikasi, atau akun demo dari seeder]` | `[ISI NANTI]` |
+| Peran | Nama | Nomor HP (`no_telp`) | Password |
+|---|---|---|---|
+| Manajer | pa manajer | `081234567890` | `password` |
+| Kasir | pa kasir | `081234567891` | `password` |
+| Pelanggan | pa pelanggan | `08008000800` | `password` |
 
+*Catatan: Pelanggan baru juga dapat mendaftar mandiri secara langsung melalui aplikasi mobile (tersedia form registrasi).*
 Akun di atas khusus pengujian, bukan akun pribadi. Login memakai **nomor telepon (`no_telp`)**.
 
 ---
@@ -256,9 +273,9 @@ Kolom **Klaim** diisi jujur sesuai kondisi saat ini. Perbarui menjadi "Ya" hanya
 | 9 | Laporan dan pembatasan hak akses | Tidak | Manajer dapat membuka laporan. Kasir dan pelanggan yang mengaksesnya mendapat 403. Jalankan `php artisan test` untuk pengujian peran. |
 | 10 | Impor dan normalisasi data CSV | Tidak | `[ISI NANTI]` Ditunda, file CSV belum tersedia. |
 | 11 | Integrasi Supplier dan fallback harga | Tidak | `[ISI NANTI]` Perbarui harga bahan saat Supplier aktif dan cek `harga_terakhir` serta `tanggal_harga` berubah. Matikan atau putuskan layanan Supplier, perbarui lagi, dan pastikan harga lama tetap dipakai tanpa error. |
-| 12 | Registrasi dan autentikasi pelanggan | Tidak | Daftar lewat API dengan nomor telepon dan password. Daftar ulang dengan nomor sama dan pastikan ditolak. Login dan pastikan menerima token. Kirim `peran=manajer` saat daftar dan pastikan akun tetap `pelanggan`. |
-| 13 | Pemesanan melalui aplikasi Android | Tidak | `[ISI NANTI]` Belum ada aplikasi Android. |
-| 14 | Pemantauan status dan struk pelanggan | Tidak | Pelanggan membuat pesanan lewat API, lalu memantau status saat kasir mengubahnya, dan membuka struk. Coba pesanan kedua berstatus `baru` dan pastikan ditolak. Coba nomor meja 0 dan 11 dan pastikan ditolak. |
+| 12 | Registrasi dan autentikasi pelanggan | Ya | Daftar lewat API/Mobile dengan nomor telepon dan password. Daftar ulang dengan nomor sama dan pastikan ditolak. Login dan pastikan menerima token. Kirim `peran=manajer` saat daftar dan pastikan akun tetap `pelanggan`. |
+| 13 | Pemesanan melalui aplikasi Android / Flutter | Ya | Pelanggan memilih menu, nomor meja 1-10 via dropdown, memilih metode bayar, dan mengirim pesanan. Validasi stok berkurang otomatis dan struk dibuat. |
+| 14 | Pemantauan status dan struk pelanggan | Ya | Pelanggan memantau status pesanan (Baru -> Diproses -> Selesai), melihat struk lengkap (service charge 5% dan pajak 10%), serta membatalkan pesanan berstatus baru. |
 
 ---
 

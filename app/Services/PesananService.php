@@ -20,7 +20,7 @@ class PesananService
     public function hitung(int $subtotal): array
     {
         $service = (int) round($subtotal * self::SERVICE_PERSEN / 100);
-        $pajak   = (int) round($subtotal * self::PAJAK_PERSEN / 100);
+        $pajak   = (int) round(($subtotal+ $service) * self::PAJAK_PERSEN / 100);
 
         return [
             'subtotal'    => $subtotal,

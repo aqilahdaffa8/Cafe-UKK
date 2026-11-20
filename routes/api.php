@@ -17,6 +17,7 @@ Route::get('/menu', [MenuController::class, 'index']);
 
 Route::middleware('auth:sanctum')->group(function(){
     Route::get('/profil', [AuthController::class, 'profil']);
+    Route::post('/ganti-password', [AuthController::class, 'gantiPassword']);
     Route::post('/logout', [AuthController::class, 'logout']);
 
     Route::get('/pesanan', [PesananController::class, 'index']);
