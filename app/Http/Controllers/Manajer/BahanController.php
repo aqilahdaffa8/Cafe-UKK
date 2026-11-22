@@ -70,6 +70,33 @@ class BahanController extends Controller
         return back()->with('sukses', "Batas minimum {$bahan->nama_bahan} diperbarui.");
     }
 
+    public function destroy(Bahan $bahan)
+    {
+        // 1. Cek apakah bahan masih digunakan dalam resep menu
+        if ($bahan->reseps()->exists()) {
+            $namaMenu = $bahan->reseps()
+                ->with('menu')
+                ->get()
+                ->pluck('menu.nama_menu')
+                ->filter()
+                ->unique()
+                ->implode(', ');
+
+            return back()->with('error', "Bahan '{$bahan->nama_bahan}' tidak dapat dihapus karena masih digunakan dalam resep menu: {$namaMenu}. Hapus atau ubah resep menu tersebut terlebih dahulu.");
+        }
+
+        // 2. Cek apakah bahan memiliki riwayat pencatatan stok masuk
+        if ($bahan->stokMasuks()->exists()) {
+            return back()->with('error', "Bahan '{$bahan->nama_bahan}' tidak dapat dihapus karena memiliki riwayat pencatatan transaksi stok masuk.");
+        }
+
+        // 3. Jika aman (belum pernah dipakai di resep & belum ada stok masuk), hapus bahan
+        $nama = $bahan->nama_bahan;
+        $bahan->delete();
+
+        return back()->with('sukses', "Bahan '{$nama}' berhasil dihapus.");
+    }
+
     public function syncHargaSupplier(SupplierService $supplierService)
     {
         $hasil = $supplierService->ambilHargaBahan();

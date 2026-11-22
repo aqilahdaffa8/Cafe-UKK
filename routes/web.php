@@ -45,6 +45,7 @@ Route::middleware(['auth', 'password.changed', 'role:manajer'])
         Route::get('/bahan', [BahanController::class, 'index'])->name('bahan.index');
         Route::post('/bahan', [BahanController::class, 'store'])->name('bahan.store');
         Route::patch('/bahan/{bahan}/batas', [BahanController::class, 'updateBatas'])->name('bahan.batas');
+        Route::delete('/bahan/{bahan}', [BahanController::class, 'destroy'])->name('bahan.destroy');
         Route::post('/bahan/sync-supplier', [BahanController::class, 'syncHargaSupplier'])->name('bahan.sync');
 
         Route::get('/stok-masuk', [StokMasukController::class, 'index'])->name('stok-masuk.index');

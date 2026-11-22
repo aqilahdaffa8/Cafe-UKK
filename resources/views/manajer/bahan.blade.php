@@ -89,11 +89,18 @@
                         </p>
                     </td>
                     <td class="px-4 py-3 text-right">
-                        <button type="button" onclick="aturBatas(this)"
-                                data-action="{{ route('manajer.bahan.batas', $b) }}"
-                                data-nama="{{ $b->nama_bahan }}"
-                                data-batas="{{ $b->batas_minimum + 0 }}"
-                                class="rounded-md border border-gray-300 px-3 py-1.5 text-xs hover:bg-gray-50">Atur batas</button>
+                        <div class="flex items-center justify-end gap-1.5">
+                            <button type="button" onclick="aturBatas(this)"
+                                    data-action="{{ route('manajer.bahan.batas', $b) }}"
+                                    data-nama="{{ $b->nama_bahan }}"
+                                    data-batas="{{ $b->batas_minimum + 0 }}"
+                                    class="rounded-md border border-gray-300 px-2.5 py-1 text-xs hover:bg-gray-50">Atur batas</button>
+                            <form method="POST" action="{{ route('manajer.bahan.destroy', $b) }}" onsubmit="return confirm('Apakah Anda yakin ingin menghapus bahan {{ $b->nama_bahan }}?')">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="rounded-md border border-red-200 px-2.5 py-1 text-xs text-red-600 hover:bg-red-50" title="Hapus bahan">Hapus</button>
+                            </form>
+                        </div>
                     </td>
                 </tr>
             @empty
