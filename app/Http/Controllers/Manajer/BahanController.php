@@ -10,6 +10,7 @@ use App\Services\SupplierService;
 
 class BahanController extends Controller
 {
+    // Tampilkan daftar bahan dengan filter pencarian dan status stok menipis
     public function index(Request $request)
     {
         $q      = trim((string) $request->query('q'));
@@ -31,6 +32,7 @@ class BahanController extends Controller
         return view('manajer.bahan', compact('bahans', 'total', 'menipis', 'q', 'status'));
     }
 
+    // Tambah bahan baru dengan kode otomatis (BHN-xxx) dan satuan dasar valid (g, ml, pcs)
     public function store(Request $request)
     {
         $data = $request->validate([
@@ -59,6 +61,7 @@ class BahanController extends Controller
         return redirect()->route('manajer.bahan.index')->with('sukses', 'Bahan berhasil ditambahkan.');
     }
 
+    // Perbarui angka batas minimum bahan untuk peringatan stok menipis
     public function updateBatas(Request $request, Bahan $bahan)
     {
         $data = $request->validate([
@@ -70,9 +73,9 @@ class BahanController extends Controller
         return back()->with('sukses', "Batas minimum {$bahan->nama_bahan} diperbarui.");
     }
 
+    // Hapus bahan jika belum pernah digunakan pada resep menu atau riwayat stok masuk
     public function destroy(Bahan $bahan)
     {
-        // 1. Cek apakah bahan masih digunakan dalam resep menu
         if ($bahan->reseps()->exists()) {
             $namaMenu = $bahan->reseps()
                 ->with('menu')
@@ -85,27 +88,25 @@ class BahanController extends Controller
             return back()->with('error', "Bahan '{$bahan->nama_bahan}' tidak dapat dihapus karena masih digunakan dalam resep menu: {$namaMenu}. Hapus atau ubah resep menu tersebut terlebih dahulu.");
         }
 
-        // 2. Cek apakah bahan memiliki riwayat pencatatan stok masuk
         if ($bahan->stokMasuks()->exists()) {
             return back()->with('error', "Bahan '{$bahan->nama_bahan}' tidak dapat dihapus karena memiliki riwayat pencatatan transaksi stok masuk.");
         }
 
-        // 3. Jika aman (belum pernah dipakai di resep & belum ada stok masuk), hapus bahan
         $nama = $bahan->nama_bahan;
         $bahan->delete();
 
         return back()->with('sukses', "Bahan '{$nama}' berhasil dihapus.");
     }
 
+    // Sinkronisasi harga bahan dari API supplier pusat ke database
     public function syncHargaSupplier(SupplierService $supplierService)
     {
         $hasil = $supplierService->ambilHargaBahan();
-        // JIKA LAYANAN GAGAL / TIMEOUT / API KEY SALAH (PERILAKU FALLBACK)
+        // Fallback jika layanan supplier gagal / timeout / API key salah
         if (! $hasil['sukses']) {
             return back()->with('peringatan', $hasil['pesan']);
         }
         
-        // JIKA BERHASIL: Update harga bahan yang cocok berdasarkan kode
         $tanggalPembaruan = $hasil['diperbarui'];
         $jumlahDiupdate   = 0;
 

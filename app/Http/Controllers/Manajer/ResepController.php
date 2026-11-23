@@ -11,15 +11,16 @@ use Illuminate\Validation\Rule;
 
 class ResepController extends Controller
 {
+    // Tampilkan resep menu terpilih dan saring bahan yang belum digunakan untuk dropdown
     public function index(Request $request)
     {
         $menus = Menu::withCount('reseps')->orderBy('nama_menu')->get();
 
-        // Menu yang dipilih lewat ?menu=ID, kalau kosong atau tidak ada ambil menu pertama
+        // Menu yang dipilih lewat ?menu=ID, kalau kosong ambil menu pertama
         $menuDipilih = Menu::with('reseps.bahan')->find($request->query('menu'))
             ?? Menu::with('reseps.bahan')->orderBy('nama_menu')->first();
 
-        // Bahan yang belum dipakai di resep menu ini (untuk dropdown tambah bahan)
+        // Ambil bahan yang belum dipakai di resep menu ini
         $bahanTersedia = $menuDipilih
             ? Bahan::whereNotIn('id_bahan', $menuDipilih->reseps->pluck('id_bahan'))
                 ->orderBy('nama_bahan')->get()
@@ -28,6 +29,7 @@ class ResepController extends Controller
         return view('manajer.resep', compact('menus', 'menuDipilih', 'bahanTersedia'));
     }
 
+    // Tambahkan bahan ke resep menu (mencegah duplikasi bahan yang sama pada satu menu)
     public function store(Request $request)
     {
         $data = $request->validate([
@@ -35,7 +37,7 @@ class ResepController extends Controller
             'id_bahan' => [
                 'required',
                 'exists:bahans,id_bahan',
-                // satu bahan hanya boleh muncul sekali di resep satu menu
+                // Cegah bahan ganda pada resep yang sama
                 Rule::unique('reseps', 'id_bahan')->where('id_menu', $request->input('id_menu')),
             ],
             'takaran'  => ['required', 'numeric', 'gt:0', 'max:999999.99'],
@@ -49,6 +51,7 @@ class ResepController extends Controller
             ->with('sukses', 'Bahan ditambahkan ke resep.');
     }
 
+    // Perbarui angka takaran bahan pada resep
     public function update(Request $request, Resep $resep)
     {
         $data = $request->validate([
@@ -61,6 +64,7 @@ class ResepController extends Controller
             ->with('sukses', 'Takaran diperbarui.');
     }
 
+    // Hapus bahan dari komposisi resep menu
     public function destroy(Resep $resep)
     {
         $idMenu = $resep->id_menu;

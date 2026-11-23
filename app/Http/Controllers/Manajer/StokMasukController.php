@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\DB;
 
 class StokMasukController extends Controller
 {
+    // Tampilkan form pencatatan dan riwayat stok masuk bahan
     public function index()
     {
         $bahans = Bahan::orderBy('nama_bahan')->get();
@@ -22,6 +23,7 @@ class StokMasukController extends Controller
         return view('manajer.stok-masuk', compact('bahans', 'riwayat'));
     }
 
+    // Catat riwayat pembelian dan tambahkan saldo stok bahan secara atomik (DB::transaction)
     public function store(Request $request)
     {
         $data = $request->validate([
@@ -31,6 +33,7 @@ class StokMasukController extends Controller
         ]);
 
         $nama = DB::transaction(function () use ($data) {
+            // lockForUpdate mengunci baris bahan untuk mencegah bentrok data stok
             $bahan = Bahan::lockForUpdate()->findOrFail($data['id_bahan']);
 
             StokMasuk::create([
@@ -40,6 +43,7 @@ class StokMasukController extends Controller
                 'tanggal'     => $data['tanggal'],
             ]);
 
+            // Tambah stok bahan
             $bahan->jumlah_stok = $bahan->jumlah_stok + $data['jumlah'];
             $bahan->save();
 

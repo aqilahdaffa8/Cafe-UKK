@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 
 class MenuController extends Controller
 {
-    //mengambil data menu yang aktif untuk pelanggan
+    // Tampilkan daftar menu aktif beserta status ketersediaannya
     public function index(Request $request)
     {
         $kategori = $request->query('kategori');

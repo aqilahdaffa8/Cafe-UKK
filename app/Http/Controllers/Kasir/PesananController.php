@@ -19,6 +19,7 @@ class PesananController extends Controller
         Pesanan::STATUS_DIBATALKAN,
     ];
 
+    // Tampilkan daftar antrean dan riwayat pesanan dengan filter status dan meja
     public function index(Request $request)
     {
         $q      = trim((string) $request->query('q'));
@@ -31,7 +32,6 @@ class PesananController extends Controller
             ->when(ctype_digit($meja), fn ($w) => $w->where('nomor_meja', (int) $meja))
             ->when($q !== '', function ($w) use ($q) {
                 $w->where(function ($x) use ($q) {
-                    // Angka di ujung teks dianggap nomor pesanan atau nomor meja: "#ORD-2026-089" atau "89"
                     if (preg_match('/(\d+)\s*$/', $q, $m)) {
                         $x->orWhere('id_pesanan', (int) $m[1])->orWhere('nomor_meja', (int) $m[1]);
                     }
@@ -63,9 +63,9 @@ class PesananController extends Controller
         ]);
     }
 
+    // Tampilkan form kasir membuat pesanan baru (hanya menu aktif yang memiliki resep)
     public function create()
     {
-        // Hanya menu aktif yang punya resep yang bisa dipesan
         $menus = Menu::where('aktif', true)->has('reseps')->orderBy('nama_menu')->get();
 
         return view('kasir.pesanan', [
@@ -77,6 +77,7 @@ class PesananController extends Controller
         ]);
     }
 
+    // Validasi dan buat pesanan baru dari kasir, potong stok bahan secara atomik
     public function store(Request $request, PesananService $service)
     {
         $data = $request->validate([
@@ -111,6 +112,7 @@ class PesananController extends Controller
         return response()->json(['ok' => true, 'redirect' => route('kasir.pesanan.index')]);
     }
 
+    // Ubah status pesanan menjadi Diproses
     public function proses(Pesanan $pesanan, PesananService $service)
     {
         return $this->jalankan(
@@ -119,6 +121,7 @@ class PesananController extends Controller
         );
     }
 
+    // Ubah status pesanan menjadi Selesai
     public function selesai(Pesanan $pesanan, PesananService $service)
     {
         return $this->jalankan(
@@ -127,6 +130,7 @@ class PesananController extends Controller
         );
     }
 
+    // Batalkan pesanan status Baru dan kembalikan stok bahan sesuai resep
     public function batal(Pesanan $pesanan, PesananService $service)
     {
         return $this->jalankan(
@@ -135,9 +139,9 @@ class PesananController extends Controller
         );
     }
 
+    // Tampilkan struk cetak kasir (hanya untuk pesanan selesai)
     public function struk(Pesanan $pesanan)
     {
-        // Sesuai UI: struk hanya untuk pesanan yang sudah selesai
         abort_unless($pesanan->status === Pesanan::STATUS_SELESAI, 404);
 
         $pesanan->load('pembuat', 'detailPesanans.menu');
@@ -149,7 +153,7 @@ class PesananController extends Controller
         ]);
     }
 
-    // Jalankan aksi status; kalau ditolak service, kembali dengan pesan galat
+    // Helper eksekusi aksi status pesanan dengan penanganan error PesananDitolak
     private function jalankan(callable $aksi, string $sukses)
     {
         try {

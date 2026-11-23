@@ -12,6 +12,7 @@ class MenuController extends Controller
 {
     private const KATEGORI = ['minuman', 'makanan', 'lainnya'];
 
+    // Tampilkan daftar menu dengan filter pencarian, status aktif, dan kategori
     public function index(Request $request)
     {
         $q        = trim((string) $request->query('q'));
@@ -40,6 +41,7 @@ class MenuController extends Controller
         ));
     }
 
+    // Tambah menu baru dalam keadaan nonaktif (wajib isi resep dulu sebelum diaktifkan)
     public function store(Request $request)
     {
         $data = $request->validate($this->aturan());
@@ -48,7 +50,7 @@ class MenuController extends Controller
             'kategori'  => $data['kategori'],
             'nama_menu' => $data['nama_menu'],
             'harga'     => $data['harga'],
-            'aktif'     => false, // menu baru belum punya resep, jadi tidak boleh langsung aktif
+            'aktif'     => false, // Menu baru belum punya resep, wajib nonaktif sesuai aturan UKK
             'gambar'    => $request->hasFile('gambar')
                 ? $request->file('gambar')->store('menu', 'public')
                 : null,
@@ -58,6 +60,7 @@ class MenuController extends Controller
             ->with('sukses', 'Menu ditambahkan dalam keadaan nonaktif. Isi resepnya di Kelola Resep, lalu aktifkan.');
     }
 
+    // Perbarui data menu dan unggah foto baru jika ada
     public function update(Request $request, Menu $menu)
     {
         $data = $request->validate($this->aturan($menu));
@@ -71,15 +74,15 @@ class MenuController extends Controller
             unset($data['gambar']);
         }
 
-        // update() tidak menyentuh kolom aktif, jadi aturan resep tidak bisa dilewati lewat sini
         $menu->update($data);
 
         return back()->with('sukses', "Menu {$menu->nama_menu} diperbarui.");
     }
 
+    // Aktifkan atau nonaktifkan menu (menolak aktivasi jika menu belum memiliki resep)
     public function toggleStatus(Menu $menu)
     {
-        // Mau diaktifkan, tapi belum ada resep: tolak
+        // Tolak jika mau diaktifkan tapi belum ada resep bahan
         if (! $menu->aktif && ! $menu->punyaResep()) {
             return back()->withErrors([
                 'status' => "Menu {$menu->nama_menu} belum punya resep. Isi dulu di Kelola Resep sebelum diaktifkan.",
@@ -93,6 +96,7 @@ class MenuController extends Controller
             : "Menu {$menu->nama_menu} dinonaktifkan.");
     }
 
+    // Aturan validasi input menu (nama unik, kategori valid, harga angka positif, foto max 2MB)
     private function aturan(?Menu $menu = null): array
     {
         return [

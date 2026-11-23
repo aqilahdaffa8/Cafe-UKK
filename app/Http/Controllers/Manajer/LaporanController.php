@@ -14,13 +14,14 @@ class LaporanController extends Controller
     // batas margin (%) => label, diperiksa dari yang tertinggi
     private const AMBANG_MARGIN = [70 => 'Sangat Tinggi', 60 => 'Optimal', 55 => 'Baik'];
 
+    // Tampilkan 3 laporan manajer: penjualan per menu (pesanan selesai), bahan menipis, dan margin HPP
     public function index(Request $request)
     {
         [$dari, $sampai, $periode] = $this->rentang($request);
 
         $menuHpp = Menu::with('reseps.bahan')->get()->keyBy('id_menu');
 
-        // 1. Penjualan per menu (hanya pesanan selesai)
+        // Laporan penjualan per menu (khusus pesanan selesai)
         $queryPenjualan = DB::table('detail_pesanans')
             ->join('pesanans', 'pesanans.id_pesanan', '=', 'detail_pesanans.id_pesanan')
             ->join('menus', 'menus.id_menu', '=', 'detail_pesanans.id_menu')
@@ -33,36 +34,39 @@ class LaporanController extends Controller
             ->orderByDesc('porsi')
             ->orderBy('menus.nama_menu');
 
-        // Semua baris: untuk total dan HPP terpakai (bukan untuk ditampilkan)
+        // Clone query untuk menghitung total keseluruhan sebelum di-paginate
         $semuaPenjualan = (clone $queryPenjualan)->get();
 
         $totalPorsi = (int) $semuaPenjualan->sum('porsi');
         $totalOmset = (int) $semuaPenjualan->sum('pendapatan');
 
+        // Hitung estimasi HPP terpakai dan rata-rata persentase margin keuntungan
         $hppTerpakai = $semuaPenjualan->sum(fn ($p) => $p->porsi * ($menuHpp[$p->id_menu]->hpp ?? 0));
         $rataMargin  = $totalOmset > 0 ? ($totalOmset - $hppTerpakai) / $totalOmset * 100 : 0;
         $persenHpp   = $totalOmset > 0 ? $hppTerpakai / $totalOmset * 100 : 0;
 
-        // Baris yang ditampilkan: 10 per halaman
+        // Paginate 10 menu per halaman
         $penjualan = $queryPenjualan->paginate(10, ['*'], 'hal_penjualan')->withQueryString();
 
         foreach ($penjualan as $p) {
             $p->harga_rata = $p->porsi > 0 ? $p->pendapatan / $p->porsi : 0;
+            // Kontribusi menu terhadap total omset kafe
             $p->kontribusi = $totalOmset > 0 ? $p->pendapatan / $totalOmset * 100 : 0;
         }
 
-        // 2. Bahan menipis
+        // laporan bahan menipis dengan membandingkan
         $menipis = Bahan::whereColumn('jumlah_stok', '<=', 'batas_minimum')
-            ->orderByRaw('(jumlah_stok - batas_minimum)')
+            ->orderByRaw('(jumlah_stok - batas_minimum)') // Urutkan dari selisih defisit terdalam
             ->paginate(10, ['*'], 'hal_menipis')
             ->withQueryString();
 
-        // 3. Analisis margin: diurutkan dari margin % tertinggi (HPP dihitung di SQL hanya untuk urutan)
+        // Subquery SQL untuk menghitung HPP 
         $hppSql = DB::table('reseps')
             ->join('bahans', 'bahans.id_bahan', '=', 'reseps.id_bahan')
             ->whereColumn('reseps.id_menu', 'menus.id_menu')
             ->selectRaw('COALESCE(SUM(reseps.takaran * bahans.harga_terakhir), 0)');
 
+        // NULLIF(menus.harga, 0): Mencegah division by zero error jika ada menu berharga 0
         $margin = Menu::query()
             ->has('reseps')
             ->with('reseps.bahan')
@@ -84,6 +88,7 @@ class LaporanController extends Controller
         ));
     }
 
+    // Tentukan rentang tanggal filter berdasarkan periode cepat yang dipilih
     private function rentang(Request $request): array
     {
         $periode = $request->query('periode', 'bulan_ini');
@@ -102,6 +107,7 @@ class LaporanController extends Controller
         };
     }
 
+    // Parsing dan validasi tanggal kustom
     private function rentangKustom(Request $request): array
     {
         try {

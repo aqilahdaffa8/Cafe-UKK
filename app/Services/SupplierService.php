@@ -7,22 +7,12 @@ use Illuminate\Support\Facades\Log;
 
 class SupplierService
 {
-    /**
-     * Mengambil daftar harga bahan terbaru dari API supplier pusat.
-     *
-     * @return array [
-     *    'sukses'    => bool,
-     *    'pesan'     => string,
-     *    'diperbarui'=> string|null,
-     *    'data'      => array
-     * ]
-     */
+    // Ambil harga bahan dari API supplier pusat dengan batas waktu 5 detik dan fallback harga terakhir
     public function ambilHargaBahan(): array
     {
         $url    = config('services.supplier.url');
         $apiKey = config('services.supplier.api_key');
 
-        // Validasi konfigurasi
         if (empty($url) || empty($apiKey)) {
             return [
                 'sukses' => false,
@@ -32,12 +22,11 @@ class SupplierService
         }
 
         try {
-            // Pastikan URL mengarah ke endpoint lengkap /harga-bahan
             $endpoint = str_ends_with(rtrim($url, '/'), '/harga-bahan')
                 ? rtrim($url, '/')
                 : rtrim($url, '/') . '/harga-bahan';
 
-            // Panggil API dengan timeout 5 detik
+            // Panggil API dengan batas timeout 5 detik agar tidak memblokir aplikasi jika lambat
             $response = Http::timeout(5)
                 ->withHeaders([
                     'X-API-Key' => $apiKey,
@@ -45,7 +34,7 @@ class SupplierService
                 ])
                 ->get($endpoint);
 
-            // Jika API Key ditolak (401)
+            // Fallback jika API key salah (HTTP 401)
             if ($response->status() === 401) {
                 return [
                     'sukses' => false,
@@ -54,7 +43,7 @@ class SupplierService
                 ];
             }
 
-            // Jika respons bukan 200 OK
+            // Fallback jika respons server bukan 200 OK
             if (! $response->successful()) {
                 return [
                     'sukses' => false,
@@ -73,7 +62,7 @@ class SupplierService
             ];
 
         } catch (\Exception $e) {
-            // Tangkap timeout, server mati, internet putus, dll.
+            // Fallback jika koneksi gagal, timeout, atau internet putus
             Log::warning('Gagal terhubung ke API supplier: ' . $e->getMessage());
 
             return [

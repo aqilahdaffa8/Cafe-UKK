@@ -12,7 +12,7 @@ use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
-    //regitrasi pelanggan baru
+    // Registrasi akun pelanggan baru
     public function register(RegisterRequest $request)
     {
         //mengambil data yang sudah tervalidasi
@@ -47,7 +47,7 @@ class AuthController extends Controller
         ], 201);
     }
 
-    //login pelanggan
+    // Login pelanggan dan terbitkan token Sanctum
     public function login(LoginRequest $request)
     {
         //mencari user berdasarkan nomer yang sudah dinormalisasi
@@ -90,7 +90,7 @@ class AuthController extends Controller
         ], 200);
     }
 
-    //mengambil profil pengguna yang sedang login
+    // Ambil data profil pelanggan yang sedang login
     public function profil(Request $request)
     {
         $user = $request->user();
@@ -107,7 +107,7 @@ class AuthController extends Controller
         ]);
     }
 
-    //mengubah password pengguna yang sedang login
+    // Ganti password pelanggan
     public function gantiPassword(Request $request)
     {
         $validated = $request->validate([
@@ -142,7 +142,7 @@ class AuthController extends Controller
         ]);
     }
 
-    //logout pengguna yang sedang login
+    // Logout dan hapus token aktif
     public function logout(Request $request)
     {
         // Hapus token yang sedang digunakan untuk request ini

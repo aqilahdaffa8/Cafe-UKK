@@ -12,13 +12,13 @@ use Illuminate\Validation\ValidationException;
 
 class WebLoginController extends Controller
 {   
-    //mengarahkan pengguna saat ngakses URL login
+    // Tampilkan form login web untuk staf
     public function show()
     {
         return view('auth.login');
     }
     
-    //menerima data baru(store) dari form login
+    // Proses login staf web dan arahkan sesuai peran
     public function store(StafLoginRequest $request)
     {
         $user = User::where('email', $request->email)->first(); //mengambil data user berdasarkan email yang diisi
@@ -36,7 +36,7 @@ class WebLoginController extends Controller
         return redirect()->intended($user->isManajer() ? '/manajer' : '/kasir'); //mengarahkan pengguna ke dashboard sesuai perannya
     }
 
-    //menangani proses logout
+    // Logout sesi web staf
     public function destroy(Request $request)
     {
         Auth::logout();

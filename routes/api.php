@@ -23,5 +23,4 @@ Route::middleware('auth:sanctum')->group(function(){
     Route::get('/pesanan', [PesananController::class, 'index']);
     Route::post('/pesanan', [PesananController::class, 'store']);
     Route::get('/pesanan/{id}', [PesananController::class, 'show']);
-    Route::post('/pesanan/{id}/batal', [PesananController::class, 'batal']);
 });

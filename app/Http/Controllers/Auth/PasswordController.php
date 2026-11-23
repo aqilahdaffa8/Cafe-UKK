@@ -10,10 +10,12 @@ use Illuminate\Validation\ValidationException;
 
 class PasswordController extends Controller
 {
+    // Tampilkan form ganti password
     public function edit(){
         return view('auth.ganti_password');
     }
 
+    // Validasi dan perbarui password staf
     public function update(Request $request){
         $data = $request->validate([
             'password_lama' => ['required', 'string'],

@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 
 class PelangganController extends Controller
 {
+    // Cari data pelanggan berdasarkan nomor telepon
     public function cari(Request $request)
     {
         $request->validate(['no_telp' => ['required', 'string', 'max:20']]);
@@ -31,6 +32,7 @@ class PelangganController extends Controller
         ]);
     }
 
+    // Reset password pelanggan ke sementara dan cabut token login
     public function reset(Request $request, User $pelanggan)
     {
         abort_unless($pelanggan->isPelanggan(), 403);

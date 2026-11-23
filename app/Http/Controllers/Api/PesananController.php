@@ -12,12 +12,12 @@ class PesananController extends Controller
 {
     protected PesananService $pesananService;
 
-    //menghubungkan controller dengan PesananService
+    // Inisialisasi dependensi PesananService
     public function __construct(PesananService $pesananService){
         $this->pesananService = $pesananService;
     }
 
-    //mengambil riwayat pesanan pelanggan yang sedang login
+    // Ambil riwayat pesanan pelanggan yang sedang login
     public function index(Request $request){
         $user = $request->user();
 
@@ -33,7 +33,7 @@ class PesananController extends Controller
         ]);
     }
 
-    // Membuat pesanan baru
+    // Buat pesanan baru dan potong stok bahan
     public function store(Request $request)
     {
         // memvalidasi input
@@ -70,7 +70,7 @@ class PesananController extends Controller
         }
     }
 
-    //melihat detail 1 pesanan (untuk struk digital)
+    // Tampilkan detail pesanan untuk struk digital
     public function show(Request $request, $id)
     {
         //cari pesanan milik user ini
@@ -89,37 +89,5 @@ class PesananController extends Controller
             'sukses' => true,
             'data'   => $pesanan,
         ]);
-    }
-
-    //membatalkan pesanan (hanya jika statusnya baru)
-    public function batal(Request $request, $id)
-    {
-        // Cari pesanan milik user ini
-        $pesanan = Pesanan::where('id_pengguna', $request->user()->id_pengguna)->find($id);
-
-        if (! $pesanan) {
-            return response()->json([
-                'sukses' => false,
-                'pesan'  => 'Pesanan tidak ditemukan.',
-            ], 404);
-        }
-
-        try {
-            //batalkan pesanan dan kembalikan stok bahan lewat service
-            $pesananBatal = $this->pesananService->batalkan($pesanan);
-
-            return response()->json([
-                'sukses' => true,
-                'pesan'  => 'Pesanan berhasil dibatalkan dan stok telah dikembalikan.',
-                'data'   => $pesananBatal,
-            ]);
-
-        } catch (PesananDitolak $e) {
-            // Jika pesanan sudah diproses, tolak pembatalan
-            return response()->json([
-                'sukses' => false,
-                'pesan'  => $e->getMessage(),
-            ], 422);
-        }
     }
 }

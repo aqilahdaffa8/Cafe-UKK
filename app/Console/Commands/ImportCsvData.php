@@ -316,16 +316,21 @@ class ImportCsvData extends Command
         return $rows;
     }
 
+    /**
+     * BUTIR 10: Mencocokkan nama bahan di resep.csv ke daftar bahan baku yang valid.
+     * Menggunakan pencocokan persis, lalu pencocokan kemiripan teks (toleransi typo >= 90%).
+     */
     private function cariBahan(string $namaInput, array $petaBahan, int $baris, array &$laporan): ?Bahan
     {
         $kunci = $this->normalisasiNama($namaInput);
 
-        // 1. Cocok persis
+        // 1. Pencocokan persis (case-insensitive & trim spasi)
         if (isset($petaBahan[$kunci])) {
             return $petaBahan[$kunci];
         }
 
-        // 2. Cocok mirip (typo), minimal 90% dan hanya jika satu kandidat terbaik
+        // 2. BUTIR 10: Pencocokan salah ketik (typo) dengan toleransi kemiripan minimal 90%
+        // similar_text(): Menghitung persentase kemiripan karakter antara 2 string
         $skor = [];
         foreach (array_keys($petaBahan) as $nama) {
             similar_text($kunci, (string) $nama, $persen);
@@ -336,17 +341,20 @@ class ImportCsvData extends Command
             return null;
         }
 
+        // arsort(): Mengurutkan array berdasarkan nilai persentase tertinggi ke terendah
         arsort($skor);
         $namaTerbaik   = array_key_first($skor);
         $persenTerbaik = $skor[$namaTerbaik];
 
+        // Ambang batas toleransi typo: minimal 90% kemiripan
         if ($persenTerbaik < 90.0) {
-            return null;
+            return null; // Jika kemiripan di bawah 90%, anggap bahan tidak dikenal
         }
 
+        // Jika ada lebih dari satu nama bahan yang skor kemiripannya sama persis (ambigu), jangan ditebak
         $kembar = array_filter($skor, fn ($p) => abs($p - $persenTerbaik) < 0.01);
         if (count($kembar) > 1) {
-            return null; // ambigu, tidak ditebak
+            return null;
         }
 
         $bahan = $petaBahan[$namaTerbaik];

@@ -16,11 +16,11 @@ class PesananService
     public const PAJAK_PERSEN   = 10;
     public const JUMLAH_MEJA    = 10;
 
-    /** Subtotal -> rincian biaya. Service dan pajak dihitung dari subtotal, dibulatkan ke rupiah. */
+    // Hitung rincian biaya struk (service 5% dan pajak 10% dari subtotal + service)
     public function hitung(int $subtotal): array
     {
         $service = (int) round($subtotal * self::SERVICE_PERSEN / 100);
-        $pajak   = (int) round(($subtotal+ $service) * self::PAJAK_PERSEN / 100);
+        $pajak   = (int) round(($subtotal + $service) * self::PAJAK_PERSEN / 100);
 
         return [
             'subtotal'    => $subtotal,
@@ -30,12 +30,7 @@ class PesananService
         ];
     }
 
-    /**
-     * Buat pesanan baru (status Baru) dan langsung potong stok bahan.
-     * $items: [['id_menu' => 1, 'jumlah' => 2], ...]
-     *
-     * @throws PesananDitolak
-     */
+    // Buat pesanan baru, validasi stok bahan resep gabungan, dan potong stok secara atomik
     public function buat(User $pembuat, int $nomorMeja, string $metode, array $items): Pesanan
     {
         if ($nomorMeja < 1 || $nomorMeja > self::JUMLAH_MEJA) {
@@ -47,10 +42,12 @@ class PesananService
 
         $items = $this->gabungkan($items);
 
+        // DB::transaction menjamin pesanan tersimpan dan stok terpotong bersamaan
         return DB::transaction(function () use ($pembuat, $nomorMeja, $metode, $items) {
-            // Kunci baris pembuat: dua permintaan bersamaan dari pelanggan yang sama dijalankan bergantian
+            // lockForUpdate mengunci baris data di database untuk mencegah tabrakan data (race condition)
             User::whereKey($pembuat->getKey())->lockForUpdate()->first();
 
+            // Pelanggan hanya boleh punya 1 pesanan aktif berstatus Baru
             if ($pembuat->isPelanggan()
                 && Pesanan::where('id_pengguna', $pembuat->getKey())
                     ->where('status', Pesanan::STATUS_BARU)->exists()) {
@@ -73,7 +70,7 @@ class PesananService
                 }
             }
 
-            // Kebutuhan tiap bahan = jumlah takaran x porsi, dijumlahkan lintas semua menu di pesanan
+            // Hitung kebutuhan bahan gabungan dari seluruh item (takaran resep x jumlah porsi)
             $kebutuhan = [];
             foreach ($items as $idMenu => $jumlah) {
                 foreach ($menus[$idMenu]->reseps as $resep) {
@@ -81,12 +78,12 @@ class PesananService
                         + (float) $resep->takaran * $jumlah;
                 }
             }
-            ksort($kebutuhan);
+            ksort($kebutuhan); // Urutkan ID bahan agar penguncian database berurutan dan mencegah deadlock
 
-            // Kunci baris bahan (urut id supaya dua pesanan bersamaan tidak saling menunggu / deadlock)
             $bahans = Bahan::whereIn('id_bahan', array_keys($kebutuhan))
                 ->orderBy('id_bahan')->lockForUpdate()->get()->keyBy('id_bahan');
 
+            // Cek ketersediaan stok bahan baku
             $kekurangan = [];
             foreach ($kebutuhan as $idBahan => $butuh) {
                 $bahan = $bahans[$idBahan];
@@ -121,15 +118,17 @@ class PesananService
                 'status'            => Pesanan::STATUS_BARU,
             ] + $this->hitung($subtotal));
 
+            // Simpan detail pesanan dan kunci harga satuan saat transaksi terjadi
             foreach ($items as $idMenu => $jumlah) {
                 DetailPesanan::create([
                     'id_pesanan'   => $pesanan->id_pesanan,
                     'id_menu'      => $idMenu,
                     'jumlah_menu'  => $jumlah,
-                    'harga_satuan' => $menus[$idMenu]->harga, // harga saat transaksi, tidak ikut berubah nanti
+                    'harga_satuan' => $menus[$idMenu]->harga,
                 ]);
             }
 
+            // Potong stok bahan baku di database
             foreach ($kebutuhan as $idBahan => $butuh) {
                 $bahan = $bahans[$idBahan];
                 $bahan->jumlah_stok = round((float) $bahan->jumlah_stok - round($butuh, 2), 2);
@@ -140,11 +139,7 @@ class PesananService
         });
     }
 
-    /**
-     * Alur status: baru -> diproses -> selesai.
-     *
-     * @throws PesananDitolak
-     */
+    // Ubah status pesanan secara berjenjang (Baru -> Diproses -> Selesai)
     public function ubahStatus(Pesanan $pesanan, string $statusBaru): Pesanan
     {
         $alur = [
@@ -153,9 +148,9 @@ class PesananService
         ];
 
         return DB::transaction(function () use ($pesanan, $statusBaru, $alur) {
-            // Baca ulang dengan kunci: klik ganda atau dua kasir sekaligus tidak bisa melompati alur
             $p = Pesanan::lockForUpdate()->findOrFail($pesanan->getKey());
 
+            // Tolak jika alur status melompat atau mundur
             if (($alur[$p->status] ?? null) !== $statusBaru) {
                 throw new PesananDitolak("Pesanan berstatus {$p->status} tidak bisa diubah menjadi {$statusBaru}.");
             }
@@ -166,11 +161,7 @@ class PesananService
         });
     }
 
-    /**
-     * Batalkan pesanan (hanya yang masih Baru) dan kembalikan stok bahan.
-     *
-     * @throws PesananDitolak
-     */
+    // Batalkan pesanan status Baru dan kembalikan stok bahan sesuai resep
     public function batalkan(Pesanan $pesanan): Pesanan
     {
         return DB::transaction(function () use ($pesanan) {
@@ -181,6 +172,7 @@ class PesananService
                 throw new PesananDitolak('Hanya pesanan berstatus Baru yang bisa dibatalkan.');
             }
 
+            // Hitung seluruh bahan yang harus dipulihkan
             $kembali = [];
             foreach ($p->detailPesanans as $detail) {
                 foreach ($detail->menu->reseps as $resep) {
@@ -193,6 +185,7 @@ class PesananService
             $bahans = Bahan::whereIn('id_bahan', array_keys($kembali))
                 ->orderBy('id_bahan')->lockForUpdate()->get()->keyBy('id_bahan');
 
+            // Kembalikan stok bahan baku
             foreach ($kembali as $idBahan => $jumlah) {
                 $bahan = $bahans[$idBahan];
                 $bahan->jumlah_stok = round((float) $bahan->jumlah_stok + round($jumlah, 2), 2);
@@ -205,7 +198,7 @@ class PesananService
         });
     }
 
-    /** Gabungkan menu yang sama dan pastikan tiap item valid: hasilnya [id_menu => jumlah]. */
+    // Gabungkan item menu yang sama dan akumulasi jumlah porsinya
     private function gabungkan(array $items): array
     {
         $hasil = [];
