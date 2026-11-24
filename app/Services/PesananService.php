@@ -51,7 +51,7 @@ class PesananService
             if ($pembuat->isPelanggan()
                 && Pesanan::where('id_pengguna', $pembuat->getKey())
                     ->where('status', Pesanan::STATUS_BARU)->exists()) {
-                throw new PesananDitolak('Anda masih punya pesanan berstatus Baru. Tunggu pesanan itu diproses atau batalkan dulu.');
+                throw new PesananDitolak('Anda masih memiliki pesanan aktif yang sedang menunggu diproses kasir.');
             }
 
             $menus = Menu::with('reseps')->whereIn('id_menu', array_keys($items))->get()->keyBy('id_menu');
@@ -66,6 +66,9 @@ class PesananService
                     throw new PesananDitolak("Menu {$menu->nama_menu} sedang tidak tersedia.");
                 }
                 if ($menu->reseps->isEmpty()) {
+                    if ($pembuat->isPelanggan()) {
+                        throw new PesananDitolak("Menu {$menu->nama_menu} sedang tidak tersedia.");
+                    }
                     throw new PesananDitolak("Menu {$menu->nama_menu} belum punya resep.");
                 }
             }
@@ -103,6 +106,25 @@ class PesananService
             }
 
             if ($kekurangan !== []) {
+                if ($pembuat->isPelanggan()) {
+                    // Berikan notifikasi yang relevan untuk pelanggan (sebutkan nama menu yang habis, bukan rincian gram bahan dapur)
+                    $idBahanKurang = array_column($kekurangan, 'id_bahan');
+                    $menuKurang = [];
+                    foreach ($items as $idMenu => $jumlah) {
+                        $menuObj = $menus[$idMenu];
+                        foreach ($menuObj->reseps as $resep) {
+                            if (in_array($resep->id_bahan, $idBahanKurang, true)) {
+                                $menuKurang[] = $menuObj->nama_menu;
+                                break;
+                            }
+                        }
+                    }
+                    $menuKurang = array_unique($menuKurang);
+                    $teksMenu = !empty($menuKurang) ? implode(', ', $menuKurang) : 'yang Anda pesan';
+
+                    throw new PesananDitolak("Maaf, stok {$teksMenu} tidak mencukupi. Silakan kurangi pesanan atau pilih menu lain.", $kekurangan);
+                }
+
                 throw new PesananDitolak('Stok bahan baku tidak cukup untuk pesanan ini.', $kekurangan);
             }
 

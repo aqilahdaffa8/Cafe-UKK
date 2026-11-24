@@ -25,3 +25,10 @@ _ide_helper.php
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# Mobile Flutter
+mobile/**/build/
+mobile/**/.dart_tool/
+mobile/**/.idea/
+mobile/**/.gradle/
+

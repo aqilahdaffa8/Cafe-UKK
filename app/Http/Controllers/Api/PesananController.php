@@ -79,7 +79,7 @@ class PesananController extends Controller
             ->find($id);
 
         if (! $pesanan) {
-            return response()->json([
+            return response()->json([   
                 'sukses' => false,
                 'pesan'  => 'Pesanan tidak ditemukan.',
             ], 404);

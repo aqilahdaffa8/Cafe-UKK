@@ -130,12 +130,14 @@ Aplikasi mobile untuk pelanggan tersedia di folder berdampingan: `../app_cafe_uk
   ```bash
   flutter build apk --release
   # Output APK berada di: build/app/outputs/flutter-apk/app-release.apk
+  # File siap pasang sudah disalin ke folder /apk/app-release.apk
   ```
 - **Pengaturan Alamat Server / API:**
-  Diatur pada file `lib/constant.dart`:
-  - Emulator Android: `http://10.0.2.2:8000/api`
-  - Browser / Desktop: `http://127.0.0.1:8000/api`
-  - HP Fisik (Satu Wi-Fi): `http://<IP_LAPTOP>:8000/api`
+  - **Secara Dinamis di Aplikasi:** Tersedia tombol ikon gerigi (Pengaturan Server) di pojok kanan atas layar Login. Cukup masukkan IP laptop saat itu (misal: `http://192.168.1.26:8000/api`) dan klik Simpan. Alamat otomatis tersimpan di HP tanpa perlu kompilasi ulang APK.
+  - **Secara Statis di Kode:** Dapat diatur pada file `lib/constant.dart`.
+    - Emulator Android: `http://10.0.2.2:8000/api`
+    - Browser / Desktop: `http://127.0.0.1:8000/api`
+    - HP Fisik (Satu Wi-Fi): `http://<IP_LAPTOP>:8000/api`
 - **Menjalankan Server Laravel untuk Akses HP Fisik:**
   ```bash
   php artisan serve --host=0.0.0.0 --port=8000
@@ -270,7 +272,7 @@ Data CSV awal telah tersedia di folder `database/data/csv/` (`bahan.csv`, `menu.
 | 11 | Integrasi Supplier dan fallback harga | Ya | Jalankan sinkronisasi harga supplier pada menu Manajer. Putuskan koneksi internet atau gunakan URL supplier dummy; pastikan sistem tetap berjalan menggunakan harga lama tanpa terjadi error/crash. |
 | 12 | Registrasi dan autentikasi pelanggan | Ya | Daftar lewat API/Mobile dengan nomor telepon dan password. Daftar ulang dengan nomor sama dan pastikan ditolak (unik). Login dan pastikan menerima token Sanctum. |
 | 13 | Pemesanan melalui aplikasi Android / Flutter | Ya | Pelanggan memilih menu, memilih nomor meja 1–10 via dropdown, memilih metode bayar, dan mengirim pesanan. Validasi stok berkurang otomatis dan struk dibuat. |
-| 14 | Pemantauan status dan struk pelanggan | Ya | Pelanggan memantau status pesanan secara *real-time* via silent polling 4 detik (Baru → Diproses → Selesai), melihat struk lengkap (service 5% dan pajak 10%), serta membatalkan pesanan jika masih berstatus baru. |
+| 14 | Pemantauan status dan struk pelanggan | Ya | Pelanggan memantau status pesanan secara *real-time* via silent polling 4 detik (Baru → Diproses → Selesai) dan melihat struk lengkap (service 5% dan pajak 10%). Sesuai aturan soal, pelanggan hanya dapat memantau pesanannya sendiri dan tidak dapat membatalkan pesanan di APK (hanya Kasir di web yang dapat membatalkan). |
 
 ---
 
